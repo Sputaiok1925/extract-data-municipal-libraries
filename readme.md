@@ -48,6 +48,8 @@ Get your API KEY on [generate your token ](https://api.golemio.cz/api-keys), and
 ### 4. Run the code
 At the first start the file with data municipal_libraries.csv is automatically created, then this file is automatically updated at 7.00 Prague time.
 
+---
+
 ## Why I chose this implementation approach
 
 I designed this solution with simplicity, reliability, and automation in mind.
