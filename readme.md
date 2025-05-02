@@ -43,8 +43,9 @@ The script is structured into three main parts:
  Allows loading environment variables (e.g., API key) from a `.env` file.<br>
 `datetime`<br>
  Used for working with date and time, such as logging the current timestamp during data updates.<br>
-
-### 3. Run the code
+### 3. Golemio token
+Get your API KEY on [generate your token ](https://api.golemio.cz/api-keys), and assign it to the API_KEY variable 
+### 4. Run the code
 At the first start the file with data municipal_libraries.csv is automatically created, then this file is automatically updated at 7.00 Prague time.
 
 ## Why I chose this implementation approach
