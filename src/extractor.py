@@ -4,16 +4,17 @@ import json
 import os
 from apscheduler.schedulers.blocking import BlockingScheduler
 from pytz import timezone
+from dotenv import load_dotenv
 import datetime
 
-# URL и ключ API
+# API URL and key
 API_URL = "https://api.golemio.cz/v2/municipallibraries"
-API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MzU0OCwiaWF0IjoxNzQ2MDM4ODY4LCJleHAiOjExNzQ2MDM4ODY4LCJpc3MiOiJnb2xlbWlvIiwianRpIjoiNTlmNWVmODAtY2JlZC00YjU2LThkMTYtNjZlYmYzNjk2MDQ4In0.dyEPutgPtxqCSZ21mfj9ZhpwX2oXOAdbdGQj3IzOYgw"
+API_KEY = os.getenv("API_KEY")
 headers = {"X-Access-Token": API_KEY}
 
 OUTPUT_FILE = "municipal_libraries.csv"
 
-# Функция для получения данных
+# Function to fetch data
 def fetch_libraries():
     response = requests.get(API_URL, headers=headers)
     response.raise_for_status()
@@ -21,18 +22,18 @@ def fetch_libraries():
         data = response.json()
         return data.get('features', [])
     except json.JSONDecodeError:
-        print("Ошибка при декодировании JSON.")
+        print("Error decoding JSON.")
         return []
 
-# Функция для извлечения и сохранения данных
+# Function to extract and save data
 def extract_and_save():
-    print(f"\n=== Запуск обновления данных: {datetime.datetime.now()} ===")
+    print(f"\n=== Data update started: {datetime.datetime.now()} ===")
     libraries = fetch_libraries()
     records = []
     for lib in libraries:
         properties = lib.get("properties", {})
         address = properties.get("address", {})
-        #location = properties.get("geometry", {}).get("coordinates", [])
+        # location = properties.get("geometry", {}).get("coordinates", [])
         location = lib.get("geometry", {}).get("coordinates", [])
         records.append({
             "ID knižnice": properties.get("id", ""),
@@ -50,21 +51,21 @@ def extract_and_save():
         })
     df = pd.DataFrame(records)
     df.to_csv(OUTPUT_FILE, index=False, encoding='utf-8-sig')
-    print(f"Данные успешно обновлены и сохранены в '{OUTPUT_FILE}'")
+    print(f"Data successfully updated and saved to '{OUTPUT_FILE}'")
 
-# Основная функция с планировщиком
+# Main function with scheduler
 def main():
-    # Первый запуск сразу (если файл не существует)
+    # Run immediately if file does not exist
     if not os.path.exists(OUTPUT_FILE):
-        print("Файл не найден, выполняем первый сбор данных...")
+        print("File not found, performing initial data collection...")
         extract_and_save()
     else:
-        print("Файл найден, пропускаем начальный сбор.")
+        print("File found, skipping initial data collection.")
 
-    # Настройка планировщика
+    # Scheduler setup
     scheduler = BlockingScheduler(timezone=timezone('Europe/Prague'))
     scheduler.add_job(extract_and_save, 'cron', hour=7, minute=0)
-    print("Планировщик запущен. Данные будут обновляться ежедневно в 7:00 (по Праге).")
+    print("Scheduler started. Data will be updated daily at 7:00 AM (Prague time).")
     scheduler.start()
 
 if __name__ == "__main__":
